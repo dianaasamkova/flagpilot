@@ -1,0 +1,12 @@
+{
+  "name": "@flagpilot/domain",
+  "private": true,
+  "type": "module",
+  "description": "zod schemas, inferred types and pure functions. No I/O, safe to import in the browser.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

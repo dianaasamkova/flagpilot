@@ -1,0 +1,12 @@
+{
+  "name": "@flagpilot/mcp-server",
+  "private": true,
+  "type": "module",
+  "description": "MCP server over stdio for Claude Code (filled in M7).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

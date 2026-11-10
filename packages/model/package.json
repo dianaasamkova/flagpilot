@@ -1,0 +1,12 @@
+{
+  "name": "@flagpilot/model",
+  "private": true,
+  "type": "module",
+  "description": "ModelClient interface and adapters: fake, replay, Gemini (filled in M3).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

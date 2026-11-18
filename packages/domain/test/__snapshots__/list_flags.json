@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "env": {
+      "description": "Only look at this environment.",
+      "type": "string",
+      "enum": [
+        "dev",
+        "staging",
+        "production"
+      ]
+    },
+    "enabled": {
+      "description": "Only flags that are on (true) or off (false) in \"env\". Needs \"env\".",
+      "type": "boolean"
+    },
+    "tag": {
+      "description": "Only flags with this tag.",
+      "type": "string",
+      "enum": [
+        "release",
+        "experiment",
+        "ops",
+        "permanent",
+        "beta"
+      ]
+    },
+    "query": {
+      "description": "Text to look for in the flag key and description, ignoring case.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50
+    }
+  },
+  "additionalProperties": false
+}

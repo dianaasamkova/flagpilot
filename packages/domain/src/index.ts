@@ -2,3 +2,4 @@
 export * from "./conventions.ts";
 export * from "./flag.ts";
 export * from "./flag-change.ts";
+export * from "./tools.ts";

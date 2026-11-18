@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "flagKey": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "description": "The key of the flag to change, e.g. \"checkout-new-button\"."
+    },
+    "env": {
+      "type": "string",
+      "enum": [
+        "dev",
+        "staging",
+        "production"
+      ],
+      "description": "The environment to change."
+    },
+    "set": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Turn the flag on (true) or off (false).",
+          "type": "boolean"
+        },
+        "regions": {
+          "description": "The regions that are eligible. Replaces the current list, so include every region you want.",
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "EU",
+              "NA",
+              "APAC"
+            ]
+          }
+        },
+        "rolloutPercent": {
+          "description": "Share of the eligible users who get the feature, 0–100.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "additionalProperties": false,
+      "description": "The fields to change. Leave a field out to keep its current value."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "Why the change is needed, in the user's words. Saved to the flag's history."
+    }
+  },
+  "required": [
+    "flagKey",
+    "env",
+    "set",
+    "reason"
+  ],
+  "additionalProperties": false
+}

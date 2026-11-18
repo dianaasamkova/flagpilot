@@ -3,3 +3,6 @@ pnpm-lock.yaml
 coverage/
 # Docs are written by hand; Prettier would re-pad every table
 *.md
+
+# Snapshots are written by Vitest; reformatting them would make the tests fail
+**/__snapshots__/

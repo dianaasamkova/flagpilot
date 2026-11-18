@@ -24,9 +24,16 @@ function isNotOffWithRollout(set: {
 export const FlagChangeSet = z
   .strictObject(
     {
-      enabled: z.boolean({ error: "enabled must be true or false. Example: true." }).optional(),
-      regions: Regions.optional(),
-      rolloutPercent: RolloutPercent.optional(),
+      enabled: z
+        .boolean({ error: "enabled must be true or false. Example: true." })
+        .optional()
+        .describe("Turn the flag on (true) or off (false)."),
+      regions: Regions.optional().describe(
+        "The regions that are eligible. Replaces the current list, so include every region you want.",
+      ),
+      rolloutPercent: RolloutPercent.optional().describe(
+        "Share of the eligible users who get the feature, 0–100.",
+      ),
     },
     {
       // Key, owner, description and tags can't be changed through a FlagChange
@@ -52,11 +59,17 @@ export type FlagChangeSet = z.infer<typeof FlagChangeSet>;
 const REASON_HINT =
   'reason must be 3–200 characters saying why, for the history. Example: "Start the EU beta".';
 
+// The descriptions below go into the JSON Schema the model sees (FP-8)
 export const FlagChange = z.strictObject({
-  flagKey: FlagKey,
-  env: Environment,
-  set: FlagChangeSet,
+  flagKey: FlagKey.describe('The key of the flag to change, e.g. "checkout-new-button".'),
+  env: Environment.describe("The environment to change."),
+  set: FlagChangeSet.describe("The fields to change. Leave a field out to keep its current value."),
   // Written to the history (FlagEvent), so people can see why it changed
-  reason: z.string({ error: REASON_HINT }).trim().min(3, REASON_HINT).max(200, REASON_HINT),
+  reason: z
+    .string({ error: REASON_HINT })
+    .trim()
+    .min(3, REASON_HINT)
+    .max(200, REASON_HINT)
+    .describe("Why the change is needed, in the user's words. Saved to the flag's history."),
 });
 export type FlagChange = z.infer<typeof FlagChange>;

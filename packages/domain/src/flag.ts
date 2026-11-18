@@ -66,14 +66,19 @@ export const Targeting = z.strictObject({ regions: Regions });
 export type Targeting = z.infer<typeof Targeting>;
 
 const ROLLOUT_HINT = "rolloutPercent must be a whole number from 0 to 100. Example: 25.";
+/** Share of the eligible users who get the feature. Reused by FlagChange (FP-7). */
+export const RolloutPercent = z
+  .int({ error: ROLLOUT_HINT })
+  .min(0, ROLLOUT_HINT)
+  .max(100, ROLLOUT_HINT);
+
 const REVISION_HINT = "revision must be a whole number, 0 or more. Example: 3.";
 
 /** A flag's settings in one environment. */
 export const EnvConfig = z.strictObject({
   enabled: z.boolean({ error: "enabled must be true or false. Example: true." }),
   targeting: Targeting,
-  // Share of the eligible users who get the feature
-  rolloutPercent: z.int({ error: ROLLOUT_HINT }).min(0, ROLLOUT_HINT).max(100, ROLLOUT_HINT),
+  rolloutPercent: RolloutPercent,
   // Goes up by 1 on every change; stops two edits from overwriting each other
   revision: z.int({ error: REVISION_HINT }).min(0, REVISION_HINT),
 });

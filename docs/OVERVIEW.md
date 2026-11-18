@@ -37,11 +37,18 @@ Everything is free to run and public on GitHub, with a live demo link.
 | ADR | A short record of one decision and why we made it |
 | Eval | An automatic test of the AI with 25–30 example requests |
 
-## Files today (docs only, no code yet)
+## Files today
+The workspace, tooling and CI are in place (FP-3 to FP-5). The packages are still empty: they are filled from FP-6 onwards.
+
 | File | What's inside |
 |---|---|
 | `CLAUDE.md` | Working rules for Claude: teaching mode, gates, zero cost, mock domain |
 | `docs/OVERVIEW.md` | This page |
+| `docs/CONVENTIONS.md` | Flag key naming, owners, tags, and what makes a flag "stale" (FP-47) |
+| `apps/web/` | Next.js app with one placeholder page |
+| `packages/{domain,db,model,mcp-server}/` | Empty package stubs |
+| `test/workspace.test.ts` | Checks that every package follows the shared setup |
+| `.github/workflows/ci.yml` | CI on every PR: format check, typecheck, lint, test, build |
 | `docs/PLAN.md` | One-page plan: domain, architecture, milestones, failure handling, eval |
 | `docs/BACKLOG.md` | All stories (FP-1 … FP-57), each with an owner and a "done when" |
 | `docs/KICKOFF.md` | Step-by-step plan for day 1 |
@@ -53,15 +60,14 @@ Everything is free to run and public on GitHub, with a live demo link.
 | `docs/adr/0005` | Our own `ModelClient` interface; Gemini free tier by default |
 | `docs/adr/0006` | Free hosting: Vercel, Neon Postgres, GitHub Actions |
 
-## Files we will create
+## What goes where
 ```
 apps/web/              Next.js website: flag table, assistant panel, Confirm card, API routes
 packages/domain/       zod schemas + pure functions (diff, permissions). No database, no network
 packages/db/           Prisma: database tables and queries
 packages/model/        ModelClient + adapters: Fake (tests), Replay (demo), Gemini (live)
 packages/mcp-server/   MCP server for Claude Code
-evals/                 cases.json + runner script
-docs/CONVENTIONS.md    Flag naming and ownership rules (FP-47)
+evals/                 cases.json + runner script (to be created in M6)
 .github/workflows/     CI: typecheck, lint, tests; eval on demand
 ```
 

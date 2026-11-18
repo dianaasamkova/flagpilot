@@ -84,6 +84,10 @@ export const EnvConfig = z.strictObject({
 });
 export type EnvConfig = z.infer<typeof EnvConfig>;
 
+/** An environment's settings without the revision counter, which only the store changes. */
+export const EnvSettings = EnvConfig.omit({ revision: true });
+export type EnvSettings = z.infer<typeof EnvSettings>;
+
 const DESCRIPTION_HINT =
   'description must be 1–280 characters saying what users see when the flag is on. Example: "Shows the one-page checkout."';
 

@@ -9,7 +9,6 @@ A portfolio project. The owner must understand every line and be able to explain
   - what changed, in plain words;
   - the lines that need the closest look;
   - how it was tested;
-  - for `core` stories, how to explain it in an interview.
 - A short quiz (about 5 questions) after each milestone.
 - Wait for the owner's OK at gates: new ADRs, creating anything public (repo, issues, deploys), merging PRs, and moving to the next milestone.
 - Small steps: one backlog story per PR when practical, on a branch, with CI green before merge.

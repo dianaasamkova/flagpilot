@@ -14,7 +14,10 @@ export interface FlagStore {
   listFlags(): Promise<Flag[]>;
   getFlag(key: string): Promise<Flag | undefined>;
   /** A flag's history, newest first. */
-  listEvents(key: string, options: { env?: Environment; limit: number }): Promise<FlagEvent[]>;
+  listEvents(
+    key: string,
+    options: { env?: Environment | undefined; limit: number },
+  ): Promise<FlagEvent[]>;
 
   saveProposal(proposal: Proposal): Promise<void>;
   getProposal(id: string): Promise<Proposal | undefined>;

@@ -33,7 +33,7 @@ export class MemoryFlagStore implements FlagStore {
 
   async listEvents(
     key: string,
-    options: { env?: Environment; limit: number },
+    options: { env?: Environment | undefined; limit: number },
   ): Promise<FlagEvent[]> {
     const matching = this.events.filter(
       (event) => event.flagKey === key && (options.env === undefined || event.env === options.env),

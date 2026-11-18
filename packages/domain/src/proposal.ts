@@ -97,25 +97,24 @@ export function buildProposal(input: {
 }
 
 export type ConfirmErrorCode =
-  | "not_found"
-  | "not_creator"
-  | "forbidden"
-  | "not_pending"
-  | "expired"
-  | "conflict";
+  "not_found" | "not_creator" | "forbidden" | "not_pending" | "expired" | "conflict";
 
 /** HTTP status and user-facing message for each reason a confirm fails (FP-25). */
 export const CONFIRM_ERRORS: Readonly<
   Record<ConfirmErrorCode, { status: number; message: string }>
 > = {
   not_found: { status: 404, message: "This proposal doesn't exist." },
-  not_creator: { status: 403, message: "Only the person who asked for this change can confirm it." },
+  not_creator: {
+    status: 403,
+    message: "Only the person who asked for this change can confirm it.",
+  },
   forbidden: { status: 403, message: "You're no longer allowed to change this environment." },
   not_pending: { status: 409, message: "This proposal was already confirmed or discarded." },
   expired: { status: 410, message: "This proposal has expired. Ask the assistant again." },
   conflict: {
     status: 409,
-    message: "The flag changed after this proposal was made. Ask the assistant again to see the new state.",
+    message:
+      "The flag changed after this proposal was made. Ask the assistant again to see the new state.",
   },
 };
 

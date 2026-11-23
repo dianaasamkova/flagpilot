@@ -16,5 +16,8 @@ pnpm --filter @flagpilot/web dev
 
 Open http://localhost:3000. Without a Gemini key the assistant uses an offline demo model that understands the suggested prompts. Data lives in memory and resets when the server restarts.
 
+## How it's built
+Built AI-first: I own the product, architecture and safety decisions (see the [ADRs](docs/adr/)), write the specs and review every PR; Claude Code implements under the gates in [CLAUDE.md](CLAUDE.md). `core` code (permissions, diff, propose/confirm, the agent loop) is reviewed line by line. A fuller account of what the AI implemented and what I decided, reviewed and changed comes with the final README (FP-38).
+
 ## License
 [MIT](LICENSE)

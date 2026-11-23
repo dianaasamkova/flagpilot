@@ -1,16 +1,14 @@
 # FlagPilot backlog
 
-Each story becomes one tracker issue. **Claude writes all the code; you review every PR and decide what merges.** The **Type** column says how closely to review:
-- **core**: the logic that keeps the product safe and correct. Review line by line; you must be able to explain it in an interview.
-- **setup**: config, wiring and UI. A normal review is enough.
-- **action**: something only you can do: create an account, record a video, put things in your own words.
-
-Each milestone ends with a short quiz.
+Each story becomes one tracker issue. FlagPilot is built AI-first: I own the decisions and review every PR; Claude Code writes the code, tests and docs. The **Type** column says how closely a story is reviewed:
+- **core**: the logic that keeps the product safe and correct. Reviewed line by line.
+- **setup**: config, wiring and UI. A normal review.
+- **action**: something only the author can do: create an account, record a video, write the final wording.
 
 ## M1: Foundation
 | ID | Story | Type | Done when |
 |---|---|---|---|
-| FP-1 | Git and a public GitHub repo `flagpilot`, with `LICENSE` (MIT), `.gitignore`, `.env.example` and GitHub secret-scanning push protection | setup | Repo is public, the docs are pushed, git uses your chosen name and email for this repo, and a push containing a key is blocked |
+| FP-1 | Git and a public GitHub repo `flagpilot`, with `LICENSE` (MIT), `.gitignore`, `.env.example` and GitHub secret-scanning push protection | setup | Repo is public, the docs are pushed, git uses the author's name and email for this repo, and a push containing a key is blocked |
 | FP-2 | Set up the tracker and import this backlog | setup | Every story here is an issue with a milestone and owner label |
 | FP-3 | pnpm workspace: `apps/web`, `packages/{domain,db,model,mcp-server}`, strict TS base config, Node version file | setup | `pnpm install` and `pnpm typecheck` pass |
 | FP-4 | Tooling: Vitest, ESLint, Prettier, root scripts | setup | `pnpm test` and `pnpm lint` run across all packages |
@@ -25,7 +23,7 @@ Each milestone ends with a short quiz.
 |---|---|---|---|
 | FP-9 | Create Neon and Vercel accounts (sign in with GitHub) | action | Neon has `main` and `dev` branches; the Vercel project is linked to the repo |
 | FP-10 | Prisma schema and migrations (Flag, EnvConfig, FlagEvent, Proposal, User); seed about 12 Bramble Market flags. Every row carries a `sandboxId` from the first migration (visitor sandboxes, FP-34) | setup | `pnpm db:seed` fills the `dev` branch; every query filters by `sandboxId` |
-| FP-11 | Repositories in `packages/db` that parse JSON columns with zod when read | setup | You review them; tests use a throwaway Postgres container |
+| FP-11 | Repositories in `packages/db` that parse JSON columns with zod when read | setup | Reviewed; tests use a throwaway Postgres container |
 | FP-12 | Mock auth: cookie-based user switcher with the roles viewer, editor and admin | setup | The header shows the current user and lets you switch |
 | FP-13 | `canWrite(user, env)` | **core** | Tested against every role and environment |
 | FP-14 | Read-only flag table, one view per environment | setup | Shows the seeded flags |
@@ -77,21 +75,10 @@ Each milestone ends with a short quiz.
 | FP-36 | MCP resources: the conventions doc and the ADRs | setup | Listed in MCP Inspector |
 | FP-37 | Test in MCP Inspector, connect to Claude Code with `.mcp.json` (database URL comes from an environment variable and never enters git), record an agent using it | setup | A transcript or video is saved for the README |
 
-## M8: README
+## M8: README and docs
 | ID | Story | Type | Done when |
 |---|---|---|---|
-| FP-38 | README: architecture diagram, how the work was split (what the AI wrote; what you decided, reviewed and changed), eval results, limitations, 5 interview questions with answers | setup draft · **action**: you finalize | Reviewed by you line by line |
-
-## M9: Portfolio and CV package
-| ID | Story | Type | Done when |
-|---|---|---|---|
-| FP-39 | Demo assets: 3–5 screenshots, a GIF of the confirm flow, a 2–3 minute video walkthrough | **action**: you record · setup: script | Embedded or linked in the README |
-| FP-40 | GitHub presence: pin the repo, profile README, description, topics, live link | **action** | Visible on your GitHub profile |
-| FP-41 | One-page case study: problem → decisions → results (eval numbers) → next steps; published as an article and linked from the README | setup draft · **action**: you finalize | Published |
-| FP-42 | CV entry and LinkedIn Featured item: honest bullets for both parts and the live link | setup draft · **action**: you finalize | Added to your CV |
-| FP-43 | Interview kit: 60-second pitch, 3-minute architecture walkthrough, rehearsed Q&A, "what I'd do differently" | setup draft · **action**: you rehearse | You can give the pitch without notes |
-
-Optional ("build in public"): short LinkedIn posts at M2 (live deploy) and M6 (eval results).
+| FP-38 | README: architecture diagram, how the work was split (what Claude Code implemented; what I decided, reviewed and changed), eval results, limitations | setup draft · **action**: author finalizes the wording | Reviewed line by line by the author |
 
 ## Later (positioning A + B, next iteration)
 | ID | Story |
@@ -99,7 +86,7 @@ Optional ("build in public"): short LinkedIn posts at M2 (live deploy) and M6 (e
 | FP-44 | A: second-person approval for production changes |
 | FP-45 | B: `find_stale_flags` MCP tool, plus a demo of an agent removing a dead flag |
 | FP-46 | Optional Anthropic adapter, plus a table comparing eval results across models |
-| FP-52 | Per-turn logs: latency, tokens, retries, finish reason (real numbers for the case study) |
+| FP-52 | Per-turn logs: latency, tokens, retries, finish reason (real numbers for the README) |
 | FP-53 | Accessibility: keyboard-only Confirm, focus handling, axe check in Playwright |
 | FP-54 | Rate-limit counters in a Postgres table (no extra service) |
 | FP-55 | Release tags per milestone (`v0.1.0` at M2, …) |

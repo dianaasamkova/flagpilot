@@ -24,3 +24,6 @@ test-results/
 .vscode/
 *.log
 next-env.d.ts
+
+# Personal Claude Code rules (teaching mode, portfolio notes)
+CLAUDE.local.md

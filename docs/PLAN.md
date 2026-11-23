@@ -42,8 +42,8 @@ The browser never sees an API key or calls a model. The model can **read** and *
 - **CI:** GitHub Actions with a throwaway Postgres container for tests.
 - **Visitor sandboxes:** each visitor gets their own seeded copy, deleted daily by a scheduled job.
 
-## Milestones (each ends with a short quiz; stories in [BACKLOG.md](BACKLOG.md))
-| # | Milestone | **Core** (Claude writes, you review line by line) | Setup (Claude writes, normal review) |
+## Milestones (stories in [BACKLOG.md](BACKLOG.md))
+| # | Milestone | **Core** (reviewed line by line) | Setup (normal review) |
 |---|---|---|---|
 | M1 | Git + public GitHub repo, pnpm workspace, TS strict, Vitest; conventions; domain schemas + tests | CONVENTIONS.md, zod schemas, schema unit tests | workspace config, tsconfig, lint, CI typecheck/test |
 | M2 | Prisma + Neon + seed, flag table UI, mock auth, **first deploy to Vercel** | `canWrite(user, env)` + tests | Prisma schema, seed, UI shell, Vercel/Neon wiring |
@@ -52,8 +52,7 @@ The browser never sees an API key or calls a model. The model can **read** and *
 | M5 | Failure handling: retry loop, timeout, refusal, cut-off stream, quota → replay | **validation/retry loop** + tests with `FakeModelClient` | abort wiring, error UI states, Replay adapter |
 | M6 | Eval: 25–30 cases + runner + CI; demo protections (Turnstile, limits, sandboxes) | **runner + grader**, eval cases, injection case | GitHub Actions workflows |
 | M7 | MCP server: 3 tools + resources, Inspector, Claude Code | tool handlers (reusing domain/db) | server bootstrap, `.mcp.json` |
-| M8 | README, interview Q&A | — | draft; you finalize the wording |
-| M9 | **Portfolio and CV package**: demo GIF and video, pinned repo, case study, CV and LinkedIn entry, interview kit | — | drafts, video script; you record, finalize and rehearse |
+| M8 | README and docs | — | draft; the author finalizes the wording |
 | Later | A: production approvals · B: `find_stale_flags` · optional Anthropic adapter · next-iteration extras (FP-52–57) | — | — |
 
 ## Failure handling (summary, built in M5)
@@ -73,5 +72,5 @@ The browser never sees an API key or calls a model. The model can **read** and *
    - **A:** non-engineers change flags in plain language, with guardrails and a second-person approval for production.
    - **B:** coding agents use the MCP server to find and remove stale flags.
 5. **Zero cost** for the model, hosting, database and CI: ADR-0005, ADR-0006.
-6. **Claude builds, the owner reviews** (2026-11-09). Claude writes all code, tests and docs. The owner reviews every PR, controls what merges, and reviews `core` stories line by line.
+6. **AI-first workflow** (2026-11-09). I own the product, architecture and safety decisions and write the specs; Claude Code writes the code, tests and docs. I review every PR, control what merges, and review `core` stories line by line.
 7. **Node.js 26 LTS** (2026-11-09): the newest LTS line (Active LTS since 2026-10-28, supported until April 2029) and Vercel's default runtime.

@@ -5,6 +5,8 @@ Each story becomes one tracker issue. FlagPilot is built AI-first: I own the dec
 - **setup**: config, wiring and UI. A normal review.
 - **action**: something only the author can do: create an account, record a video, write the final wording.
 
+**Order:** the core (M1–M7) to a live demo first, then M8. After that, at most two extensions: X1, then X2. Everything else is in Later. See [PLAN.md](PLAN.md#priorities) for the dates.
+
 ## M1: Foundation
 | ID | Story | Type | Done when |
 |---|---|---|---|
@@ -80,15 +82,32 @@ Each story becomes one tracker issue. FlagPilot is built AI-first: I own the dec
 |---|---|---|---|
 | FP-38 | README: architecture diagram, how the work was split (what Claude Code implemented; what I decided, reviewed and changed), eval results, limitations | setup draft · **action**: author finalizes the wording | Reviewed line by line by the author |
 
-## Later (positioning A + B, next iteration)
+## X1: Experiments (extension 1, after M7)
+| ID | Story | Type | Done when |
+|---|---|---|---|
+| FP-58 | ADR-0007: experiment model (variants inside the rollout, bucketing, exposure events, the metric, the statistics) | setup draft · **action**: author decides | ADR accepted |
+| FP-59 | Experiment schema: variants with weights that sum to 100, per environment, on top of `rolloutPercent`; bucketing by a stable hash of user ID and flag key | **core** | The same user always gets the same variant; over 10,000 simulated users each variant's share is within 1 point of its weight |
+| FP-60 | Exposure events: one per user per experiment, written on first assignment and never edited | **core** | Repeat visits don't add exposures; tests cover it |
+| FP-61 | One conversion metric per experiment, plus a seeded traffic simulator for the demo | setup | Simulated data is labelled as simulated wherever it's shown |
+| FP-62 | Results view: conversion per variant, the difference with a 95% confidence interval, two-proportion z-test p-value; sample size fixed up front, with a warning until it's reached | **core** (the statistics) | The z-test and interval match hand-checked reference values in tests |
+
+## X2: Assistant product metrics (extension 2, after X1)
+| ID | Story | Type | Done when |
+|---|---|---|---|
+| FP-52 | Per-turn logs: latency, tokens, retries, finish reason, outcome (moved from Later) | setup | Every assistant turn writes one log row; no message text is stored |
+| FP-63 | Metric definitions: proposal → confirm rate (with discarded and expired), refusal reasons by category, latency p50/p95, cost per confirmed change estimated from tokens at list prices | **core** | Each metric has a written definition and a test on fixed log data |
+| FP-64 | Metrics view for the FP-63 metrics | setup | Shows every FP-63 metric; cost is labelled as an estimate |
+
+## Later (after the core and both extensions)
 | ID | Story |
 |---|---|
 | FP-44 | A: second-person approval for production changes |
 | FP-45 | B: `find_stale_flags` MCP tool, plus a demo of an agent removing a dead flag |
 | FP-46 | Optional Anthropic adapter, plus a table comparing eval results across models |
-| FP-52 | Per-turn logs: latency, tokens, retries, finish reason (real numbers for the README) |
 | FP-53 | Accessibility: keyboard-only Confirm, focus handling, axe check in Playwright |
 | FP-54 | Rate-limit counters in a Postgres table (no extra service) |
 | FP-55 | Release tags per milestone (`v0.1.0` at M2, …) |
 | FP-56 | Dependabot for dependency updates |
 | FP-57 | Gemini fallback chain: Flash → Flash-Lite → Replay when quota runs out |
+
+Also Later, with no stories yet: a design system and micro-frontends.

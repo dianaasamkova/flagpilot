@@ -34,13 +34,20 @@ The browser never sees an API key or calls a model. The model can **read** and *
 - **The agent loop talks only to our `ModelClient` interface.** Tool definitions are generated from the zod schemas. zod validates every tool input, whatever the provider.
 - **Default live provider: Gemini free tier, the newest Flash model; Flash-Lite as the backup** (decided 2026-11-09). The exact model ID is set at M3, after checking the free quota in AI Studio.
 - **Public demo:** Replay mode by default. Live mode sits behind Turnstile and a per-visitor limit, and falls back to Replay when the quota runs out.
-- **Anthropic adapter:** optional, after M6. It's only used if a key is set, and it's never required.
+- **Anthropic adapter:** optional, in Later (after the core and both extensions). It's only used if a key is set, and it's never required.
 
 ## Hosting (ADR-0006)
 - **App:** Vercel Hobby. Pushing to `main` deploys production; each PR gets a preview URL.
 - **Database:** Neon Free (Postgres). Branch `main` serves production, branch `dev` serves local development.
 - **CI:** GitHub Actions with a throwaway Postgres container for tests.
 - **Visitor sandboxes:** each visitor gets their own seeded copy, deleted daily by a scheduled job.
+
+## Priorities
+1. **Core first:** M2–M7 to a live demo, before any extension.
+   - **Mid-December 2026:** live URL, and propose → card → Confirm works on it (M2–M4).
+   - **Early January 2027:** failure handling, eval and the MCP server (M5–M7).
+2. **Then at most two extensions, in this order:** X1 Experiments, then X2 Assistant product metrics.
+3. **Everything else stays in Later:** production approvals, `find_stale_flags`, extra model providers, a design system, micro-frontends and the smaller extras (FP-53–57).
 
 ## Milestones (stories in [BACKLOG.md](BACKLOG.md))
 | # | Milestone | **Core** (reviewed line by line) | Setup (normal review) |
@@ -53,7 +60,20 @@ The browser never sees an API key or calls a model. The model can **read** and *
 | M6 | Eval: 25–30 cases + runner + CI; demo protections (Turnstile, limits, sandboxes) | **runner + grader**, eval cases, injection case | GitHub Actions workflows |
 | M7 | MCP server: 3 tools + resources, Inspector, Claude Code | tool handlers (reusing domain/db) | server bootstrap, `.mcp.json` |
 | M8 | README and docs | — | draft; the author finalizes the wording |
-| Later | A: production approvals · B: `find_stale_flags` · optional Anthropic adapter · next-iteration extras (FP-52–57) | — | — |
+| X1 | **Experiments** (extension 1): variants on top of rollout %, exposure events, one conversion metric, results view with a two-proportion z-test | bucketing, exposure counting, z-test and confidence interval | experiment UI, traffic simulator |
+| X2 | **Assistant product metrics** (extension 2): proposal → confirm rate, refusal reasons, latency and cost per action | metric definitions | per-turn logging, metrics view |
+| Later | A: production approvals · B: `find_stale_flags` · extra model providers · design system · micro-frontends · smaller extras (FP-53–57) | — | — |
+
+## Extensions (after M7)
+**X1: Experiments.** A flag can run an experiment inside its rollout. Users in the rollout are split into variants (for example `control` 50 / `treatment` 50) by a stable hash of user ID and flag key, so a user always gets the same variant. The first assignment writes an exposure event, and each experiment has one conversion metric. The results view shows conversion per variant, the difference with a 95% confidence interval, and a two-proportion z-test p-value. The sample size is fixed up front, and the view warns until it's reached (no peeking). Bramble Market has no real traffic, so the demo uses a seeded simulator and labels its data as simulated. The data model gets its own ADR before X1 starts.
+
+**X2: Assistant product metrics.** Per-turn logs (FP-52) feed a metrics view:
+- proposal → confirm rate, with discarded and expired proposals;
+- refusal reasons, grouped by category;
+- latency per turn (p50 and p95);
+- cost per confirmed change. On the Gemini free tier the real spend is $0, so cost is estimated from token counts at list prices and labelled as an estimate.
+
+Logs store counts and categories, not the text of user messages. Both extensions stay in Postgres and add no paid service.
 
 ## Failure handling (summary, built in M5)
 - **Invalid tool args:** send the zod issues back as an error tool result → the model retries (**max 2**) → graceful fallback message. History is append-only: never edit or delete the bad call.

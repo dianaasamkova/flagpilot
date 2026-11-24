@@ -80,6 +80,8 @@ Built AI-first: I own the product, architecture and safety decisions (see [adr/]
 - **setup** stories (config, wiring, UI) get a normal review.
 - **action** stories are things only the author can do: accounts, recordings, final wording.
 
+The core (M2–M7) ships to a live demo before any extension; dates are in [PLAN.md](PLAN.md#priorities).
+
 | # | What we build | Core (reviewed line by line) |
 |---|---|---|
 | M1 | Repo, workspace, CI, conventions, schemas | CONVENTIONS.md, zod schemas, tests |
@@ -90,7 +92,9 @@ Built AI-first: I own the product, architecture and safety decisions (see [adr/]
 | M6 | Eval + demo protection | **eval runner**, eval cases, injection case |
 | M7 | MCP server | tool handlers |
 | M8 | README and docs | — |
-| Later | Approvals, `find_stale_flags`, Claude adapter, next-iteration extras | — |
+| X1 | Extension 1: experiments (variants, exposures, one metric, z-test results) | bucketing, z-test |
+| X2 | Extension 2: assistant product metrics (confirm rate, refusals, latency, cost) | metric definitions |
+| Later | Approvals, `find_stale_flags`, extra model providers, design system, micro-frontends, smaller extras | — |
 
 ## Gaps found on 2026-11-09 (all added)
 | Gap | Why it matters | Story |

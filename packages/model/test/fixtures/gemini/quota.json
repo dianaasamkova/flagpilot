@@ -1,0 +1,4 @@
+{
+  "source": "Hand-written: a 429 can't be recorded on purpose. The SDK throws ApiError with this status.",
+  "error": { "status": 429, "message": "Resource has been exhausted (e.g. check quota)." }
+}

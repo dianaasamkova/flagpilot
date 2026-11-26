@@ -78,8 +78,8 @@ export async function confirmProposal(
   });
   if (problem !== null) return err(problem);
 
-  // applyProposal checks the revision again inside the atomic step: another confirm
-  // could have landed between our read above and this write.
+  // applyProposal checks the status and the revision again inside the atomic step: a
+  // Discard or another Confirm could have landed between our reads above and this write.
   return store.applyProposal(proposal, {
     id: (deps.newId ?? defaultNewId)(),
     flagKey: proposal.flagKey,
@@ -102,6 +102,7 @@ export async function discardProposal(
   if (proposal === undefined) return err("not_found");
   if (proposal.createdBy !== user.id) return err("not_creator");
   if (proposal.status !== "pending") return err("not_pending");
-  await store.setProposalStatus(proposalId, "discarded");
+  // Checked again in the store: a Confirm may have landed since the read above
+  if (!(await store.discardPendingProposal(proposalId))) return err("not_pending");
   return ok(null);
 }

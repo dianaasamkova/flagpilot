@@ -14,7 +14,6 @@ import {
   err,
   ok,
   type Environment,
-  type ProposalStatus,
   type Result,
 } from "@flagpilot/domain";
 import { z } from "zod";
@@ -149,47 +148,56 @@ export class PrismaFlagStore implements FlagStore {
     return row === null ? undefined : toProposal(row);
   }
 
-  async setProposalStatus(id: string, status: ProposalStatus): Promise<void> {
+  async discardPendingProposal(id: string): Promise<boolean> {
     await this.ready();
-    // updateMany: a missing proposal changes nothing instead of throwing
-    await this.db.proposal.updateMany({
-      where: { sandboxId: this.sandboxId, id },
-      data: { status },
+    // Only a pending row matches. If a Confirm holds the row, Postgres makes this wait for
+    // it, then re-reads the status, so a confirmed proposal is never marked discarded.
+    const { count } = await this.db.proposal.updateMany({
+      where: { sandboxId: this.sandboxId, id, status: "pending" },
+      data: { status: "discarded" },
     });
+    return count === 1;
   }
 
   async applyProposal(
     proposal: Proposal,
     event: Omit<FlagEvent, "revision">,
-  ): Promise<Result<FlagEvent, "conflict">> {
+  ): Promise<Result<FlagEvent, "conflict" | "not_pending">> {
     await this.ready();
     const { sandboxId } = this;
-    return this.db.$transaction(async (tx): Promise<Result<FlagEvent, "conflict">> => {
-      // 1–2. The revision check and the write are one UPDATE. Postgres locks the row, so
-      //      if another confirm got there first, this UPDATE sees the new revision and
-      //      matches no row.
-      const { count } = await tx.envConfig.updateMany({
-        where: {
-          sandboxId,
-          flagKey: proposal.flagKey,
-          env: proposal.env,
-          revision: proposal.baseRevision,
-        },
-        data: { ...proposal.after, revision: { increment: 1 } },
-      });
-      if (count === 0) return err("conflict");
+    try {
+      return await this.db.$transaction(async (tx): Promise<Result<FlagEvent, "not_pending">> => {
+        // 1. Claim the proposal: only a pending one moves to confirmed. Postgres locks the
+        //    row, so a Discard or a second Confirm of it waits, then matches nothing.
+        const claimed = await tx.proposal.updateMany({
+          where: { sandboxId, id: proposal.id, status: "pending" },
+          data: { status: "confirmed" },
+        });
+        if (claimed.count === 0) return err("not_pending");
 
-      // 3. The history event, inside the same transaction
-      const saved: FlagEvent = { ...event, revision: proposal.baseRevision + 1 };
-      await tx.flagEvent.create({ data: eventRow(sandboxId, saved) });
+        // 2–3. The revision check and the write are one UPDATE. Postgres locks the row,
+        //      so if another confirm got there first, this UPDATE sees the new revision
+        //      and matches no row. Throwing rolls back step 1 too.
+        const { count } = await tx.envConfig.updateMany({
+          where: {
+            sandboxId,
+            flagKey: proposal.flagKey,
+            env: proposal.env,
+            revision: proposal.baseRevision,
+          },
+          data: { ...proposal.after, revision: { increment: 1 } },
+        });
+        if (count === 0) throw new RevisionMoved();
 
-      // 4. The proposal is done
-      await tx.proposal.updateMany({
-        where: { sandboxId, id: proposal.id },
-        data: { status: "confirmed" },
+        // 4. The history event, inside the same transaction
+        const saved: FlagEvent = { ...event, revision: proposal.baseRevision + 1 };
+        await tx.flagEvent.create({ data: eventRow(sandboxId, saved) });
+        return ok(saved);
       });
-      return ok(saved);
-    });
+    } catch (error) {
+      if (error instanceof RevisionMoved) return err("conflict");
+      throw error;
+    }
   }
 
   /** Seeds the sandbox once. A failure isn't remembered, so the next call tries again. */
@@ -201,6 +209,9 @@ export class PrismaFlagStore implements FlagStore {
     return this.seeded;
   }
 }
+
+/** Thrown inside applyProposal's transaction to roll it back when the revision moved on. */
+class RevisionMoved extends Error {}
 
 // Rows → domain objects. safeParse instead of parse, so the error names the table and
 // row, and reads like the messages the rest of the app produces.

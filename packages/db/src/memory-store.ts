@@ -8,7 +8,6 @@ import {
   type Flag,
   type FlagEvent,
   type Proposal,
-  type ProposalStatus,
   type Result,
 } from "@flagpilot/domain";
 import type { FlagStore } from "./store.ts";
@@ -52,17 +51,22 @@ export class MemoryFlagStore implements FlagStore {
     return structuredClone(this.proposals.get(id));
   }
 
-  async setProposalStatus(id: string, status: ProposalStatus): Promise<void> {
+  async discardPendingProposal(id: string): Promise<boolean> {
     const proposal = this.proposals.get(id);
-    if (proposal) proposal.status = status;
+    if (proposal?.status !== "pending") return false;
+    proposal.status = "discarded";
+    return true;
   }
 
   async applyProposal(
     proposal: Proposal,
     event: Omit<FlagEvent, "revision">,
-  ): Promise<Result<FlagEvent, "conflict">> {
-    // No await between the check and the writes, so nothing can run in between.
+  ): Promise<Result<FlagEvent, "conflict" | "not_pending">> {
+    // No await between the checks and the writes, so nothing can run in between.
     // The Prisma store gets the same guarantee from a transaction.
+    const stored = this.proposals.get(proposal.id);
+    if (stored?.status !== "pending") return err("not_pending");
+
     const flag = this.flags.get(proposal.flagKey);
     const current = flag?.envs[proposal.env];
     if (flag === undefined || current === undefined || current.revision !== proposal.baseRevision) {
@@ -73,8 +77,7 @@ export class MemoryFlagStore implements FlagStore {
     flag.envs[proposal.env] = { ...structuredClone(proposal.after), revision };
     const saved: FlagEvent = { ...structuredClone(event), revision };
     this.events.push(saved);
-    const stored = this.proposals.get(proposal.id);
-    if (stored) stored.status = "confirmed";
+    stored.status = "confirmed";
     return ok(structuredClone(saved));
   }
 }

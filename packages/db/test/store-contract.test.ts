@@ -90,11 +90,59 @@ function contractTests(newStore: () => Promise<FlagStore>) {
     expect(await store.getProposal("p-unknown")).toBeUndefined();
   });
 
-  it("changes a proposal's status", async () => {
+  it("discards only a pending proposal", async () => {
     const store = await newStore();
     await store.saveProposal(pendingProposal());
-    await store.setProposalStatus("p-1", "discarded");
+
+    expect(await store.discardPendingProposal("p-1")).toBe(true);
     expect((await store.getProposal("p-1"))?.status).toBe("discarded");
+    expect(await store.discardPendingProposal("p-1")).toBe(false);
+    expect(await store.discardPendingProposal("p-unknown")).toBe(false);
+  });
+
+  it("never marks a confirmed proposal discarded", async () => {
+    const store = await newStore();
+    await store.saveProposal(pendingProposal());
+    await store.applyProposal(pendingProposal(), confirmEvent());
+
+    expect(await store.discardPendingProposal("p-1")).toBe(false);
+    expect((await store.getProposal("p-1"))?.status).toBe("confirmed");
+  });
+
+  it("refuses to apply a proposal that was discarded meanwhile, and writes nothing", async () => {
+    const store = await newStore();
+    await store.saveProposal(pendingProposal());
+    await store.discardPendingProposal("p-1");
+
+    // The caller still holds the pending copy it read before the Discard
+    const result = await store.applyProposal(pendingProposal(), confirmEvent());
+
+    expect(result).toEqual({ ok: false, error: "not_pending" });
+    expect((await store.getFlag("checkout-one-page"))?.envs.staging.revision).toBe(2);
+    expect(await store.listEvents("checkout-one-page", { limit: 10 })).toHaveLength(2);
+    expect((await store.getProposal("p-1"))?.status).toBe("discarded");
+  });
+
+  it("lets Confirm and Discard of one proposal race, and keeps the result consistent", async () => {
+    const store = await newStore();
+    await store.saveProposal(pendingProposal());
+
+    const [applied, discarded] = await Promise.all([
+      store.applyProposal(pendingProposal(), confirmEvent()),
+      store.discardPendingProposal("p-1"),
+    ]);
+
+    // Exactly one wins, and the stored status, flag and history all agree with it
+    expect(applied.ok).not.toBe(discarded);
+    const flag = await store.getFlag("checkout-one-page");
+    const history = await store.listEvents("checkout-one-page", { limit: 10 });
+    const status = (await store.getProposal("p-1"))?.status;
+    if (applied.ok) {
+      expect([status, flag?.envs.staging.revision, history.length]).toEqual(["confirmed", 3, 3]);
+    } else {
+      expect(applied).toEqual({ ok: false, error: "not_pending" });
+      expect([status, flag?.envs.staging.revision, history.length]).toEqual(["discarded", 2, 2]);
+    }
   });
 
   it("applies a proposal: new settings, revision + 1, one event, proposal confirmed", async () => {
@@ -136,6 +184,21 @@ function contractTests(newStore: () => Promise<FlagStore>) {
 
     expect(results.filter((result) => result.ok)).toHaveLength(1);
     expect(results.filter((result) => !result.ok)).toEqual([{ ok: false, error: "conflict" }]);
+    expect((await store.getFlag("checkout-one-page"))?.envs.staging.revision).toBe(3);
+    expect(await store.listEvents("checkout-one-page", { limit: 10 })).toHaveLength(3);
+  });
+
+  it("applies one proposal only once when it's confirmed twice at the same time", async () => {
+    const store = await newStore();
+    await store.saveProposal(pendingProposal());
+
+    const results = await Promise.all([
+      store.applyProposal(pendingProposal(), confirmEvent("e-a")),
+      store.applyProposal(pendingProposal(), confirmEvent("e-b")),
+    ]);
+
+    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    expect(results.filter((result) => !result.ok)).toEqual([{ ok: false, error: "not_pending" }]);
     expect((await store.getFlag("checkout-one-page"))?.envs.staging.revision).toBe(3);
     expect(await store.listEvents("checkout-one-page", { limit: 10 })).toHaveLength(3);
   });

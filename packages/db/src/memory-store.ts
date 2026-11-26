@@ -24,7 +24,8 @@ export class MemoryFlagStore implements FlagStore {
   }
 
   async listFlags(): Promise<Flag[]> {
-    return structuredClone([...this.flags.values()]);
+    const flags = [...this.flags.values()].sort((a, b) => a.key.localeCompare(b.key));
+    return structuredClone(flags);
   }
 
   async getFlag(key: string): Promise<Flag | undefined> {

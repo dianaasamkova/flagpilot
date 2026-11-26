@@ -6,3 +6,6 @@ coverage/
 
 # Snapshots are written by Vitest; reformatting them would make the tests fail
 **/__snapshots__/
+
+# Made by prisma generate
+packages/db/src/generated/

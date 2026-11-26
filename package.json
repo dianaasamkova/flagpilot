@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:migrate": "pnpm --filter @flagpilot/db db:migrate",
+    "db:deploy": "pnpm --filter @flagpilot/db db:deploy",
+    "db:seed": "pnpm --filter @flagpilot/db db:seed"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

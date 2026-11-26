@@ -17,6 +17,23 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # A throwaway Postgres for the store tests (FP-11); Neon runs Postgres 17 too
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: flagpilot
+          POSTGRES_PASSWORD: flagpilot
+          POSTGRES_DB: flagpilot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U flagpilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://flagpilot:flagpilot@localhost:5432/flagpilot_test
     steps:
       - uses: actions/checkout@v7
       # Reads the pnpm version from "packageManager" in package.json
@@ -25,10 +42,15 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # Also runs `prisma generate` (packages/db postinstall)
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm lint
+      - name: Migrate the test database
+        run: pnpm db:deploy
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
       - run: pnpm test
       - run: pnpm --filter @flagpilot/web build
         env:

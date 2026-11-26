@@ -14,9 +14,12 @@ export type FakeTurn = readonly ModelEvent[] | "hang" | "throw";
 export class FakeModelClient implements ModelClient {
   /** Every request the loop sent, so tests can check what the model was shown. */
   readonly requests: ModelRequest[] = [];
+  private readonly script: readonly FakeTurn[];
   private next = 0;
 
-  constructor(private readonly script: readonly FakeTurn[]) {}
+  constructor(script: readonly FakeTurn[]) {
+    this.script = script;
+  }
 
   async *stream(request: ModelRequest): AsyncGenerator<ModelEvent> {
     // Copy the messages: the loop keeps appending to its own list

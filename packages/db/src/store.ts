@@ -1,6 +1,7 @@
 // The storage contract (FP-11). One store instance serves one sandbox: a demo visitor's
 // own copy of the data, so the sandbox filter can't be forgotten in a query.
-// MemoryFlagStore implements it now; a Prisma version implements the same interface in M2.
+// MemoryFlagStore (tests, local runs without a database) and PrismaFlagStore (Postgres)
+// implement it, and test/store-contract.ts runs the same tests against both.
 import type {
   Environment,
   Flag,
@@ -11,6 +12,7 @@ import type {
 } from "@flagpilot/domain";
 
 export interface FlagStore {
+  /** Every flag, sorted by key. */
   listFlags(): Promise<Flag[]>;
   getFlag(key: string): Promise<Flag | undefined>;
   /** A flag's history, newest first. */

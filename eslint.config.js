@@ -4,7 +4,13 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-  globalIgnores(["**/node_modules/", "**/.next/", "**/coverage/", "**/next-env.d.ts"]),
+  globalIgnores([
+    "**/node_modules/",
+    "**/.next/",
+    "**/coverage/",
+    "**/next-env.d.ts",
+    "packages/db/src/generated/",
+  ]),
 
   // Every TypeScript file in the repo
   js.configs.recommended,

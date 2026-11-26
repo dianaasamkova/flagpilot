@@ -37,12 +37,15 @@ describe("resolveSession", () => {
     expect(session.sandbox).toBe(getSandbox(ID));
   });
 
-  it.each([undefined, "not-a-uuid", "../../etc"])("starts a new sandbox for %s", (sandboxId) => {
-    const session = resolveSession({ sandboxId });
-    expect(session.isNewSandbox).toBe(true);
-    expect(session.sandboxId).toMatch(/^[0-9a-f-]{36}$/);
-    expect(session.sandbox).toBe(getSandbox(session.sandboxId));
-  });
+  it.each([undefined, "not-a-uuid", "../../etc", "-".repeat(36)])(
+    "starts a new sandbox for %s",
+    (sandboxId) => {
+      const session = resolveSession({ sandboxId });
+      expect(session.isNewSandbox).toBe(true);
+      expect(session.sandboxId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(session.sandbox).toBe(getSandbox(session.sandboxId));
+    },
+  );
 
   it("doesn't keep a throwaway sandbox for a page view", () => {
     const session = resolveSession({}, { register: false });

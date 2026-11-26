@@ -32,12 +32,13 @@ describe("list_flags", () => {
 
   it("filters by on/off in one environment and shows only that environment", async () => {
     const outcome = await tools.list_flags({ env: "production", enabled: false });
+    // Sorted by key, like every store returns them
     expect(keys(outcome)).toEqual([
-      "checkout-one-page",
-      "search-semantic-ranking",
-      "catalog-legacy-reviews",
       "account-passwordless-login",
+      "catalog-legacy-reviews",
+      "checkout-one-page",
       "platform-maintenance-mode",
+      "search-semantic-ranking",
     ]);
     const [first] = outcome.ok ? (outcome.data as { envs: object }[]) : [];
     expect(Object.keys(first?.envs ?? {})).toEqual(["production"]);

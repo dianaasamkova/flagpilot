@@ -1,0 +1,112 @@
+// The Postgres tables (FP-10). One Sandbox per demo visitor (ADR-0006); every other row
+// belongs to exactly one sandbox, and its sandboxId is part of the primary key, so a
+// query can't reach another visitor's data by id alone.
+//
+// JSON columns hold the shapes from packages/domain. The store parses them with zod on
+// every read (FP-11), so a bad row fails loudly instead of reaching the UI or the model.
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  // Node.js runs the generated TypeScript directly (the seed script), so imports keep ".ts"
+  importFileExtension    = "ts"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Environment {
+  dev
+  staging
+  production
+}
+
+enum ProposalStatus {
+  pending
+  confirmed
+  discarded
+}
+
+/// A visitor's own seeded copy of the data. Deleting it deletes everything inside.
+model Sandbox {
+  id        String      @id @db.Uuid
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  flags     Flag[]
+  events    FlagEvent[]
+  proposals Proposal[]
+
+  // The daily cleanup (FP-34) deletes sandboxes older than a day
+  @@index([createdAt])
+}
+
+model Flag {
+  sandboxId   String      @db.Uuid
+  key         String
+  description String
+  owner       String
+  tags        String[]
+  sandbox     Sandbox     @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+  envs        EnvConfig[]
+
+  @@id([sandboxId, key])
+}
+
+/// One row per flag and environment: three per flag.
+model EnvConfig {
+  sandboxId      String      @db.Uuid
+  flagKey        String
+  env            Environment
+  enabled        Boolean
+  /// Targeting from packages/domain: { regions: Region[] }
+  targeting      Json
+  rolloutPercent Int
+  /// Bumped on every write; a confirm only applies when it still matches (ADR-0002)
+  revision       Int
+  flag           Flag        @relation(fields: [sandboxId, flagKey], references: [sandboxId, key], onDelete: Cascade)
+
+  @@id([sandboxId, flagKey, env])
+}
+
+/// The append-only change log. Rows are only ever inserted.
+model FlagEvent {
+  sandboxId String      @db.Uuid
+  id        String
+  flagKey   String
+  env       Environment
+  actor     String
+  at        DateTime    @db.Timestamptz(3)
+  reason    String
+  /// EnvSettings from packages/domain
+  before    Json
+  /// EnvSettings from packages/domain
+  after     Json
+  revision  Int
+  sandbox   Sandbox     @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+
+  @@id([sandboxId, id])
+  // explain_flag_history reads a flag's events newest first
+  @@index([sandboxId, flagKey, at(sort: Desc)])
+}
+
+/// A change the assistant prepared that a human hasn't confirmed yet (ADR-0002).
+model Proposal {
+  sandboxId    String         @db.Uuid
+  id           String
+  flagKey      String
+  env          Environment
+  reason       String
+  baseRevision Int
+  /// EnvSettings from packages/domain
+  before       Json
+  /// EnvSettings from packages/domain
+  after        Json
+  createdBy    String
+  createdAt    DateTime       @db.Timestamptz(3)
+  expiresAt    DateTime       @db.Timestamptz(3)
+  status       ProposalStatus
+  sandbox      Sandbox        @relation(fields: [sandboxId], references: [id], onDelete: Cascade)
+
+  @@id([sandboxId, id])
+}

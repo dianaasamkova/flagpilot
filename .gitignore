@@ -2,6 +2,8 @@
 node_modules/
 
 # Build output
+# Prisma client, made by `prisma generate` on install
+packages/db/src/generated/
 .next/
 out/
 dist/

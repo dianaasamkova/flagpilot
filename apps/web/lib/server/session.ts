@@ -1,12 +1,15 @@
 // Who is asking (mock auth, FP-12) and which sandbox they work in (ADR-0006).
 // Plain functions over cookie values, so route handlers and tests don't need Next.js.
-import { DEMO_USERS, MemoryFlagStore, seedEvents, seedFlags, type FlagStore } from "@flagpilot/db";
+import { DEMO_USERS, type FlagStore } from "@flagpilot/db";
 import type { User } from "@flagpilot/domain";
 import type { Message } from "@flagpilot/model";
+import { memoryStore, sandboxStore } from "./storage.ts";
 
 export const USER_COOKIE = "fp_user";
 export const SANDBOX_COOKIE = "fp_sandbox";
-const SANDBOX_ID = /^[0-9a-f-]{36}$/;
+// A lowercase UUID, as crypto.randomUUID() makes. Postgres stores it in a uuid column,
+// so anything else must be rejected before it reaches a query.
+const SANDBOX_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const ONE_DAY = 60 * 60 * 24;
 
 /** Default user when no one is picked: the editor, so the demo can make changes. */
@@ -18,8 +21,14 @@ export function userFromId(id: string | undefined): User {
 
 /** One visitor's own copy of the data, plus their conversations with the assistant. */
 export class Sandbox {
-  readonly store: FlagStore = new MemoryFlagStore({ flags: seedFlags(), events: seedEvents() });
+  readonly store: FlagStore;
+  // Conversations stay in server memory for now, even with Postgres: a long chat can lose
+  // its earlier turns if the next request lands on another server instance.
   private readonly conversations = new Map<string, Message[]>();
+
+  constructor(store: FlagStore) {
+    this.store = store;
+  }
 
   /** The conversation history of one user in this sandbox. */
   conversation(userId: string): Message[] {
@@ -32,8 +41,9 @@ export class Sandbox {
   }
 }
 
-// Kept on globalThis so sandboxes survive hot reloads in development. Lives in server
-// memory until the Postgres store arrives (FP-10); FP-34 adds the daily cleanup.
+// Kept on globalThis so sandboxes survive hot reloads in development. With DATABASE_URL
+// set, each entry is a thin handle on the sandbox's rows in Postgres; FP-34 adds the
+// daily cleanup.
 const registry: Map<string, Sandbox> = ((
   globalThis as { flagpilotSandboxes?: Map<string, Sandbox> }
 ).flagpilotSandboxes ??= new Map());
@@ -41,7 +51,7 @@ const registry: Map<string, Sandbox> = ((
 export function getSandbox(id: string): Sandbox {
   let sandbox = registry.get(id);
   if (sandbox === undefined) {
-    sandbox = new Sandbox();
+    sandbox = new Sandbox(sandboxStore(id));
     registry.set(id, sandbox);
   }
   return sandbox;
@@ -80,7 +90,8 @@ export function resolveSession(
     return { user, sandboxId, sandbox: getSandbox(sandboxId), isNewSandbox: false };
   }
   const sandboxId = crypto.randomUUID();
-  const sandbox = options.register ? getSandbox(sandboxId) : new Sandbox();
+  // The throwaway copy stays in memory: nothing is written to it, so no rows are needed
+  const sandbox = options.register ? getSandbox(sandboxId) : new Sandbox(memoryStore());
   return { user, sandboxId, sandbox, isNewSandbox: true };
 }
 

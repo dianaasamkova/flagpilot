@@ -38,7 +38,7 @@ Everything is free to run and public on GitHub, with a live demo link.
 | Eval | An automatic test of the AI with 25–30 example requests |
 
 ## Files today
-The workspace, CI, domain schemas and safety core are in place. The app runs locally on an in-memory store with an offline demo model (see the [README](../README.md)). Postgres, Gemini and the MCP server come in later milestones.
+The workspace, CI, domain schemas and safety core are in place. The app runs locally with an offline demo model, on Postgres when `DATABASE_URL` is set and in memory otherwise (see the [README](../README.md)). Gemini and the MCP server come in later milestones.
 
 | File | What's inside |
 |---|---|
@@ -57,11 +57,11 @@ The workspace, CI, domain schemas and safety core are in place. The app runs loc
 | `docs/adr/0006` | Free hosting: Vercel, Neon Postgres, GitHub Actions |
 | `apps/web/` | Next.js app: flag table, user switcher, assistant panel, proposal card; routes `/api/assistant` and `/api/proposals/[id]/{confirm,discard}`; agent loop and system prompt in `lib/assistant/` |
 | `packages/domain/` | zod schemas (flag, `FlagChange`, tool inputs, proposal, history, stream events), convention lists, `diff`, `canWrite` |
-| `packages/db/` | `FlagStore` contract, in-memory store, Bramble Market seed data, propose and confirm actions. The Prisma store arrives in M2 |
+| `packages/db/` | `FlagStore` contract, in-memory and Postgres (Prisma) stores with shared contract tests, the schema and migrations in `prisma/`, Bramble Market seed data, propose and confirm actions |
 | `packages/model/` | `ModelClient` interface, a scripted fake for tests, an offline demo model. The Gemini adapter arrives in M3 |
 | `packages/mcp-server/` | Stub, filled in M7 |
 | `test/` | Repo-wide checks: every package follows the shared setup; `CONVENTIONS.md` and the code agree |
-| `.github/workflows/ci.yml` | CI on every PR: format check, typecheck, lint, test, build |
+| `.github/workflows/ci.yml` | CI on every PR: format check, typecheck, lint, migrate a throwaway Postgres, test, build |
 
 ## What goes where
 ```

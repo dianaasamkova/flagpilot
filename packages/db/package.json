@@ -2,14 +2,25 @@
   "name": "@flagpilot/db",
   "private": true,
   "type": "module",
-  "description": "Prisma client and repositories (filled in M2).",
+  "description": "FlagStore contract, in-memory and Postgres (Prisma) stores, seed data and write actions.",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
-    "@flagpilot/domain": "workspace:*"
+    "@flagpilot/domain": "workspace:*",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "prisma": "7.10.1"
   }
 }

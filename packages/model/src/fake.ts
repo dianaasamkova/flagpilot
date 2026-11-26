@@ -58,7 +58,10 @@ export function fakeTurn(parts: { text?: string; calls?: ModelEvent[] }): ModelE
   return events;
 }
 
-/** A tool_call event. */
-export function toolCall(id: string, name: string, args: unknown): ModelEvent {
-  return { type: "tool_call", call: { id, name, args } };
+/** A tool_call event, optionally with a provider signature. */
+export function toolCall(id: string, name: string, args: unknown, signature?: string): ModelEvent {
+  return {
+    type: "tool_call",
+    call: { id, name, args, ...(signature !== undefined && { signature }) },
+  };
 }

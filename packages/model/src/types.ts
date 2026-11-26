@@ -9,8 +9,12 @@ export type ToolDefinition = {
   inputSchema: Record<string, unknown>;
 };
 
-/** A tool call from the model. args is unchecked: the loop validates it with zod. */
-export type ToolCall = { id: string; name: string; args: unknown };
+/**
+ * A tool call from the model. args is unchecked: the loop validates it with zod.
+ * signature is an opaque token some providers attach to a call (Gemini's thought
+ * signatures, ADR-0007). It must go back unchanged in the next request; the loop never reads it.
+ */
+export type ToolCall = { id: string; name: string; args: unknown; signature?: string };
 
 /** What the loop sends back for one tool call. isError tells the model the call failed. */
 export type ToolResult = { callId: string; name: string; isError: boolean; content: string };

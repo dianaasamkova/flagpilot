@@ -77,6 +77,20 @@ describe("runAssistantTurn: normal turns", () => {
     }
   });
 
+  it("sends a tool call's signature back to the model unchanged (ADR-0007)", async () => {
+    const { model } = await run([
+      fakeTurn({ calls: [toolCall("c1", "list_flags", {}, "opaque-signature-1")] }),
+      fakeTurn({ text: "Here they are." }),
+    ]);
+    // The second request's history holds the assistant message exactly as the model sent it
+    const reply = model.requests[1]?.messages.find((message) => message.role === "assistant");
+    expect(reply).toEqual({
+      role: "assistant",
+      text: "",
+      toolCalls: [{ id: "c1", name: "list_flags", args: {}, signature: "opaque-signature-1" }],
+    });
+  });
+
   it("streams a proposal event and leaves the flag unchanged", async () => {
     const { events, store } = await run([
       fakeTurn({ calls: [toolCall("c1", "propose_flag_change", validChange)] }),

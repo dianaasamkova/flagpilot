@@ -6,3 +6,5 @@ packages:
 allowBuilds:
   "@prisma/engines": true
   prisma: true
+  # From @google/genai: its script only prints a version check, which we don't need
+  protobufjs: false

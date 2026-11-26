@@ -1,0 +1,4 @@
+{
+  "source": "Hand-written from the @google/genai 3.6.1 types. Replaced by a recording after the live check (pnpm --filter @flagpilot/model record:gemini).",
+  "chunks": [{ "candidates": [{ "index": 0, "finishReason": "SAFETY" }] }]
+}

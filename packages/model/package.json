@@ -2,11 +2,16 @@
   "name": "@flagpilot/model",
   "private": true,
   "type": "module",
-  "description": "ModelClient interface and adapters: fake, replay, Gemini (filled in M3).",
+  "description": "ModelClient interface and adapters: fake (tests), demo (offline), Gemini (live). Gemini is a separate entry, so only server code loads its SDK.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./gemini": "./src/gemini.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "record:gemini": "node --env-file-if-exists=../../.env scripts/record-gemini.ts"
+  },
+  "dependencies": {
+    "@google/genai": "3.6.1"
   }
 }

@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-06
+- Amended by: ADR-0007 (Gemini SDK, API, model ID and thought signatures, decided at M3)
 - Amends: ADR-0001 (tool-choice note), ADR-0003 (`strict: true` section), ADR-0004 (SDK call in the loop)
 
 ## Context

@@ -32,7 +32,7 @@ The browser never sees an API key or calls a model. The model can **read** and *
 
 ## Model (ADR-0005)
 - **The agent loop talks only to our `ModelClient` interface.** Tool definitions are generated from the zod schemas. zod validates every tool input, whatever the provider.
-- **Default live provider: Gemini free tier, the newest Flash model; Flash-Lite as the backup** (decided 2026-11-09). The exact model ID is set at M3, after checking the free quota in AI Studio.
+- **Default live provider: Gemini free tier, the newest Flash model; Flash-Lite as the backup** (decided 2026-11-09). At M3 this became `gemini-3.8-flash`, with `gemini-3.5-flash-lite` as the backup (ADR-0007).
 - **Public demo:** Replay mode by default. Live mode sits behind Turnstile and a per-visitor limit, and falls back to Replay when the quota runs out.
 - **Anthropic adapter:** optional, in Later (after the core and both extensions). It's only used if a key is set, and it's never required.
 

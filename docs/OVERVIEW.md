@@ -49,12 +49,14 @@ The workspace, CI, domain schemas and safety core are in place. The app runs loc
 | `docs/BACKLOG.md` | All stories, each with a type and a "done when" |
 | `docs/CONVENTIONS.md` | Flag key naming, owners, tags, and what makes a flag "stale" (FP-47) |
 | `docs/plans/M1.md` | Detailed plan for M1: versions, files, PR order, schema rules, risks. Later milestones get their own file before they start |
+| `docs/plans/M3.md` | Plan for M3: the Gemini adapter, its contract tests, the system prompt rules and the eval cases they need |
 | `docs/adr/0001` | The AI acts only through tool calls, not free text |
 | `docs/adr/0002` | Confirm before write: proposal, card, re-check, save |
 | `docs/adr/0003` | One set of zod schemas shared everywhere |
 | `docs/adr/0004` | We write the agent loop ourselves and stream events as NDJSON |
 | `docs/adr/0005` | Our own `ModelClient` interface; Gemini free tier by default |
 | `docs/adr/0006` | Free hosting: Vercel, Neon Postgres, GitHub Actions |
+| `docs/adr/0007` | Gemini details: `generateContent`, `gemini-3.8-flash`, thought signatures |
 | `apps/web/` | Next.js app: flag table, user switcher, assistant panel, proposal card; routes `/api/assistant` and `/api/proposals/[id]/{confirm,discard}`; agent loop and system prompt in `lib/assistant/` |
 | `packages/domain/` | zod schemas (flag, `FlagChange`, tool inputs, proposal, history, stream events), convention lists, `diff`, `canWrite` |
 | `packages/db/` | `FlagStore` contract, in-memory and Postgres (Prisma) stores with shared contract tests, the schema and migrations in `prisma/`, Bramble Market seed data, propose and confirm actions |

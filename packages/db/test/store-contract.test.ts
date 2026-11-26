@@ -273,6 +273,17 @@ describe.skipIf(TEST_DATABASE_URL === undefined)("PrismaFlagStore", () => {
     expect(counts).toEqual([0, 0, 0, 0]);
   });
 
+  it("stores times as the exact instant, whatever the server's time zone", async () => {
+    const store = newSandboxStore();
+    await store.saveProposal(pendingProposal());
+
+    const [row] = await db.$queryRaw<{ exact: boolean; zone: string }[]>`
+      SELECT "createdAt" = ${pendingProposal().createdAt}::timestamptz AS exact,
+             current_setting('TimeZone') AS zone
+      FROM "Proposal" WHERE "sandboxId" = ${store.sandboxId}::uuid AND id = 'p-1'`;
+    expect(row).toEqual({ exact: true, zone: "UTC" });
+  });
+
   it("rejects an UPDATE on the history: events are append-only", async () => {
     const store = newSandboxStore();
     await store.listFlags();

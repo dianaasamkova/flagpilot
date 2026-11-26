@@ -35,7 +35,12 @@ export const SHARED_SANDBOX_ID = "00000000-0000-4000-8000-000000000001";
 
 /** One client per process: it holds a pool of database connections. */
 export function createPrismaClient(connectionString: string): PrismaClient {
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  // The adapter sends times without a time zone, and Postgres reads them in the session's
+  // zone. A UTC session stores the exact instant even when the server's default isn't UTC
+  // (a local Postgres on Europe/Warsaw stored every time an hour early).
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString, options: "-c TimeZone=UTC" }),
+  });
 }
 
 /**
